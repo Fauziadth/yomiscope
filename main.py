@@ -2,11 +2,11 @@ import mss
 import numpy as np
 import cv2
 from dotenv import load_dotenv
-import os
 import pytesseract
+from config import TESSERACT_PATH
 
 load_dotenv()
-pytesseract.pytesseract.tesseract_cmd = os.getenv("TESSERACT_PATH")
+pytesseract.pytesseract.tesseract_cmd = TESSERACT_PATH
 
 with mss.mss() as sct:
 
