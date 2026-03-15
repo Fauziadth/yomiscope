@@ -1,29 +1,21 @@
 import mss
 import numpy as np
 import cv2
-from paddleocr import PaddleOCR
+from dotenv import load_dotenv
+import os
+import pytesseract
 
-# init OCR (Japanese)
-# ocr = PaddleOCR(lang="japan")
+load_dotenv()
+pytesseract.pytesseract.tesseract_cmd = os.getenv("TESSERACT_PATH")
 
 with mss.mss() as sct:
 
-    monitor = sct.monitors[1]  # main monitor
-
+    monitor = sct.monitors[1]
     screenshot = sct.grab(monitor)
+
     img = np.array(screenshot)
+    img = cv2.cvtColor(img, cv2.COLOR_BGRA2GRAY)
 
-    # output = "sct-{top}x{left}_{width}x{height}.png".format(**monitor)
-    # mss.tools.to_png(screenshot.rgb, screenshot.size, output=output)
+    text = pytesseract.image_to_string(img, lang="jpn")
 
-
-    # convert BGRA -> BGR
-    img = cv2.cvtColor(img, cv2.COLOR_BGRA2BGR)
-
-    # result = ocr.ocr(img)
-
-    print("\nDetected text:\n")
-    #
-    # for line in result[0]:
-    #     text = line[1][0]
-    #     print(text)
+    print(text)
