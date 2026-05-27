@@ -3,6 +3,7 @@ import mss
 import numpy as np
 import cv2
 import pytesseract
+import time
 
 from dotenv import load_dotenv
 from config import TESSERACT_PATH
@@ -20,6 +21,7 @@ region = load_region()
 if region is None:
     region = select_region()
     save_region(region)
+previous_text = ""
 
 while True:
 
@@ -30,12 +32,18 @@ while True:
         img = np.array(screenshot)
         gray = cv2.cvtColor(img, cv2.COLOR_BGRA2GRAY)
 
-        # text = pytesseract.image_to_string(gray , lang="jpn")
-        # print(text)
+        gray = cv2.resize(gray, None, fx=2, fy=2)
+
+        # _, gray = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY)
+
+        text = pytesseract.image_to_string(gray , lang="jpn").strip()
+        # if text and text != previous_text:
+        print(text)
+            # previous_text = text
 
     cv2.imshow("capture", gray)
 
-    key = cv2.waitKey(1)
+    key = cv2.waitKey(2000)
 
     # Q = quit
     if key == ord("q"):
