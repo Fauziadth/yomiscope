@@ -6,6 +6,7 @@ start_point = None
 end_point = None
 drawing = False
 
+
 def mouse_callback(event, x, y, flags, param):
     global start_point, end_point, drawing
 
@@ -21,41 +22,45 @@ def mouse_callback(event, x, y, flags, param):
         end_point = (x, y)
 
 
-with mss.mss() as sct:
-    print(sct.monitors)
-    monitor = sct.monitors[0]
-    screenshot = np.array(sct.grab(monitor))
+def select_region():
 
-img = cv2.cvtColor(screenshot, cv2.COLOR_BGRA2BGR)
-clone = img.copy()
+    global start_point, end_point
 
-cv2.namedWindow("Select Region", cv2.WINDOW_NORMAL)
-cv2.setMouseCallback("Select Region", mouse_callback)
+    with mss.mss() as sct:
 
-while True:
-    temp = clone.copy()
+        monitor = sct.monitors[0]
+        screenshot = np.array(sct.grab(monitor))
 
-    if start_point and end_point:
-        cv2.rectangle(temp, start_point, end_point, (0,255,0), 2)
+    img = cv2.cvtColor(screenshot, cv2.COLOR_BGRA2BGR)
+    clone = img.copy()
 
-    cv2.imshow("Select Region", temp)
+    cv2.namedWindow("Select Region", cv2.WINDOW_NORMAL)
+    cv2.setMouseCallback("Select Region", mouse_callback)
 
-    key = cv2.waitKey(1)
+    while True:
 
-    if key == 13:  # ENTER untuk confirm
-        break
+        temp = clone.copy()
 
-cv2.destroyAllWindows()
+        if start_point and end_point:
+            cv2.rectangle(temp, start_point, end_point, (0,255,0), 2)
 
-x1, y1 = start_point
-x2, y2 = end_point
+        cv2.imshow("Select Region", temp)
 
-region = {
-    "top": min(y1, y2) + monitor["top"],
-    "left": min(x1, x2) + monitor["left"],
-    "width": abs(x2 - x1),
-    "height": abs(y2 - y1),
-}
+        key = cv2.waitKey(1)
 
-print("Selected region:")
-print(region)
+        if key == 13:
+            break
+
+    cv2.destroyAllWindows()
+
+    x1, y1 = start_point
+    x2, y2 = end_point
+
+    region = {
+        "top": min(y1, y2) + monitor["top"],
+        "left": min(x1, x2) + monitor["left"],
+        "width": abs(x2 - x1),
+        "height": abs(y2 - y1),
+    }
+
+    return region

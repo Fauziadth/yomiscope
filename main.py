@@ -1,34 +1,50 @@
 import ctypes
-ctypes.windll.user32.SetProcessDPIAware()
-
 import mss
 import numpy as np
 import cv2
-from dotenv import load_dotenv
 import pytesseract
-import pyautogui
+
+from dotenv import load_dotenv
 from config import TESSERACT_PATH
+
+from region_selector import select_region
+from region_loader import load_region, save_region
+
+ctypes.windll.user32.SetProcessDPIAware()
 
 load_dotenv()
 pytesseract.pytesseract.tesseract_cmd = TESSERACT_PATH
 
-region = {'top': 980, 'left': -1269, 'width': 702, 'height': 109}
+region = load_region()
 
-with mss.mss() as sct:
-    print(sct.monitors)
+if region is None:
+    region = select_region()
+    save_region(region)
 
-    monitor = sct.monitors[0]
-    screenshot = sct.grab(region)
+while True:
 
-    img = np.array(screenshot)
-    gray  = cv2.cvtColor(img, cv2.COLOR_BGRA2GRAY)
+    with mss.mss() as sct:
+
+        screenshot = sct.grab(region)
+
+        img = np.array(screenshot)
+        gray = cv2.cvtColor(img, cv2.COLOR_BGRA2GRAY)
+
+        # text = pytesseract.image_to_string(gray , lang="jpn")
+        # print(text)
 
     cv2.imshow("capture", gray)
-    cv2.waitKey(0)
 
+    key = cv2.waitKey(1)
 
-    print(pyautogui.position())
+    # Q = quit
+    if key == ord("q"):
+        break
 
-    # text = pytesseract.image_to_string(gray , lang="jpn")
-    #
-    # print(text)
+    # R = reselect region
+    elif key == ord("r"):
+
+        region = select_region()
+        save_region(region)
+
+        print("New region:", region)
