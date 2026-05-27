@@ -3,11 +3,13 @@ import mss
 import numpy as np
 import cv2
 import pytesseract
-import time
+import sys
 
 from dotenv import load_dotenv
 from config import TESSERACT_PATH
 
+from PySide6.QtWidgets import QApplication
+from overlay_window import OverlayWindow
 from region_selector import select_region
 from region_loader import load_region, save_region
 
@@ -23,6 +25,10 @@ if region is None:
     save_region(region)
 previous_text = ""
 
+app = QApplication(sys.argv)
+overlay = OverlayWindow()
+overlay.show()
+
 while True:
 
     with mss.mss() as sct:
@@ -36,10 +42,11 @@ while True:
 
         # _, gray = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY)
 
-        text = pytesseract.image_to_string(gray , lang="jpn").strip()
-        # if text and text != previous_text:
-        print(text)
-            # previous_text = text
+        text = pytesseract.image_to_string(gray , lang="eng").strip()
+        if text and text != previous_text:
+            overlay.update_text(text)
+            app.processEvents()
+            previous_text = text
 
     cv2.imshow("capture", gray)
 
